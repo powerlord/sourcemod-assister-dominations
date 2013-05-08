@@ -4,7 +4,7 @@
 #include <sdktools>
 
 /*
-	TFClass_None,
+	TFClass_Unknown = 0,
 	TFClass_Scout,
 	TFClass_Sniper,
 	TFClass_Soldier,
@@ -15,12 +15,7 @@
 	TFClass_Spy,
 	TFClass_Engineer
 	*/
-new bool:g_bClassDominations[TFClassType] = { false, true, true, true, true, false, false, false, true, true };
-
-new Handle:g_DominationSounds[TFClassType][TFClassType];
-
-// Revenge list
-new Handle:g_RevengeSounds[TFClassType];
+new String:g_ClassNames[TFClassType][16] = { "Unknown", "Scout", "Sniper", "Soldier", "Demoman", "Medic", "Heavy", "Pyro", "Spy", "Engineer"};
 
 public Plugin:myinfo = 
 {
@@ -33,30 +28,8 @@ public Plugin:myinfo =
 
 public OnPluginStart()
 {
-	SetupArrays();
 	HookEvent("player_death", Event_PlayerDeath);
 }
-
-SetupArrays()
-{
-	new arraySize = ByteCountToCells(PLATFORM_MAX_PATH);
-	
-	for (new i = 1; i < _:TFClassType; ++i)
-	{
-		if (g_bClassDominations[i])
-		{
-			for (new j = 1; j < _:TFClassType; ++j)
-			{
-				g_DominationSounds[i][j] = CreateArray(arraySize);
-			}
-		}
-		else
-		{
-			g_DominationSounds[i][0] = CreateArray(arraySize);
-		}
-	}
-}
-
 
 public Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 {
@@ -71,38 +44,40 @@ public Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 //	new attacker = GetClientUserId(GetEventInt(event, "attacker"));
 	new assister = GetClientUserId(GetEventInt(event, "assister"));
 	
-	if (victim < 1 || victim > MaxClients || assister < 1 || assister > MaxClients || !IsClientInGame(assister) || !IsPlayerAlive(assister))
+	if (victim < 1 || victim > MaxClients || assister < 1 || assister > MaxClients || !IsClientInGame(assister) || !IsPlayerAlive(assister) ||
+		TF2_IsPlayerInCondition(assister, TFCond_Cloaked) || TF2_IsPlayerInCondition(assister, TFCond_Disguised))
 	{
 		return;
 	}
 
 	if (deathflags & TF_DEATHFLAG_ASSISTERDOMINATION)
 	{
-		new TFClassType:class = TF2_GetPlayerClass(assister);
 		new TFClassType:victimClass = TF2_GetPlayerClass(victim);
 		
-		new String:sound[PLATFORM_MAX_PATH];
+		new String:victimClassContext[64];
+		Format(victimClassContext, sizeof(victimClassContext), "victimclass:%s", g_ClassNames[victimClass]);
 		
-		if (g_bClassDominations[class])
-		{
-			victimClass = TF2_GetPlayerClass(victim);
-		}
-		else
-		{
-			victimClass = TFClass_Unknown;
-		}
+		SetVariantString("domination:dominated");
+		AcceptEntityInput(assister, "AddContext");
 		
-		new random = GetRandomInt(1, GetArraySize(g_DominationSounds[class][victimClass]));
-		GetArrayString(g_DominationSounds[class][victimClass], random, sound, PLATFORM_MAX_PATH);
+		SetVariantString(victimClassContext);
+		AcceptEntityInput(assister, "AddContext");
 		
-		PrecacheSound(sound);
+		SetVariantString("TLK_KILLED_PLAYER");
+		AcceptEntityInput(assister, "SpeakResponseConcept");
 		
-		EmitSoundToAll(sound, assister, SNDCHAN_VOICE);
+		AcceptEntityInput(assister, "ClearContext");
 	}
 	
 	if (deathflags & TF_DEATHFLAG_ASSISTERREVENGE)
 	{
+		SetVariantString("domination:revenge");
+		AcceptEntityInput(assister, "AddContext");
 		
+		SetVariantString("TLK_KILLED_PLAYER");
+		AcceptEntityInput(assister, "SpeakResponseConcept");
+		
+		AcceptEntityInput(assister, "ClearContext");
 	}
 
 }
