@@ -3,6 +3,8 @@
 #include <tf2>
 #include <sdktools>
 
+#define VERSION "1.0"
+
 /*
 	TFClass_Unknown = 0,
 	TFClass_Scout,
@@ -19,15 +21,16 @@ new String:g_ClassNames[TFClassType][16] = { "Unknown", "Scout", "Sniper", "Sold
 
 public Plugin:myinfo = 
 {
-	name = "Assister Dominations",
+	name = "Assister Domination Quotes",
 	author = "Powerlord",
-	description = "Play domination lines when assister gets a domination",
-	version = "1.0",
-	url = "<- URL ->"
+	description = "Play domination and revenge lines when an assister gets a domination or revenge",
+	version = VERSION,
+	url = "https://forums.alliedmods.net/showthread.php?t=215449"
 }
 
 public OnPluginStart()
 {
+	CreateConVar("assisterdomination_version", VERSION, "Assister Domination Quotes version", FCVAR_PLUGIN|FCVAR_NOTIFY|FCVAR_DONTRECORD);
 	HookEvent("player_death", Event_PlayerDeath);
 }
 
