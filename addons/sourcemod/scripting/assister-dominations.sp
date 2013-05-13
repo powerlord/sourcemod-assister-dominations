@@ -3,7 +3,7 @@
 #include <tf2>
 #include <sdktools>
 
-#define VERSION "1.0"
+#define VERSION "1.1"
 
 /*
 	TFClass_Unknown = 0,
@@ -43,9 +43,9 @@ public Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 		return;
 	}
 
-	new victim = GetClientUserId(GetEventInt(event, "userid"));
+	new victim = GetClientOfUserId(GetEventInt(event, "userid"));
 //	new attacker = GetClientUserId(GetEventInt(event, "attacker"));
-	new assister = GetClientUserId(GetEventInt(event, "assister"));
+	new assister = GetClientOfUserId(GetEventInt(event, "assister"));
 	
 	if (victim < 1 || victim > MaxClients || assister < 1 || assister > MaxClients || !IsClientInGame(assister) || !IsPlayerAlive(assister) ||
 		TF2_IsPlayerInCondition(assister, TFCond_Cloaked) || TF2_IsPlayerInCondition(assister, TFCond_Disguised))
