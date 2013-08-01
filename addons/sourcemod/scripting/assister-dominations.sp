@@ -3,7 +3,7 @@
 #include <tf2>
 #include <sdktools>
 
-#define VERSION "1.1"
+#define VERSION "1.2"
 
 /*
 	TFClass_Unknown = 0,
@@ -37,8 +37,9 @@ public OnPluginStart()
 public Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	new deathflags = GetEventInt(event, "deathflags");
+	new bool:silentKill = GetEventBool(event, "silent_kill");
 	
-	if (dontBroadcast || deathflags & TF_DEATHFLAG_DEADRINGER)
+	if (silentKill || dontBroadcast || deathflags & TF_DEATHFLAG_DEADRINGER == TF_DEATHFLAG_DEADRINGER)
 	{
 		return;
 	}
@@ -53,10 +54,12 @@ public Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 		return;
 	}
 
-	if (deathflags & TF_DEATHFLAG_ASSISTERDOMINATION)
+	if (deathflags & TF_DEATHFLAG_ASSISTERDOMINATION == TF_DEATHFLAG_ASSISTERDOMINATION)
 	{
 		new TFClassType:victimClass = TF2_GetPlayerClass(victim);
 		
+		LogMessage("Attempting to play Assister Domination for %N for class %s", assister, g_ClassNames[victimClass]);
+
 		new String:victimClassContext[64];
 		Format(victimClassContext, sizeof(victimClassContext), "victimclass:%s", g_ClassNames[victimClass]);
 		
@@ -71,9 +74,10 @@ public Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 		
 		AcceptEntityInput(assister, "ClearContext");
 	}
-	
-	if (deathflags & TF_DEATHFLAG_ASSISTERREVENGE)
+	else if (deathflags & TF_DEATHFLAG_ASSISTERREVENGE == TF_DEATHFLAG_ASSISTERREVENGE)
 	{
+		LogMessage("Attempting to play Assister Revenge for %N", assister);
+		
 		SetVariantString("domination:revenge");
 		AcceptEntityInput(assister, "AddContext");
 		
