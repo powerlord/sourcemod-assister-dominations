@@ -54,19 +54,19 @@ public Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 		return;
 	}
 
+	new TFClassType:victimClass = TF2_GetPlayerClass(victim);
+	
 	if (deathflags & TF_DEATHFLAG_ASSISTERDOMINATION == TF_DEATHFLAG_ASSISTERDOMINATION)
 	{
-		new TFClassType:victimClass = TF2_GetPlayerClass(victim);
-		
 		LogMessage("Attempting to play Assister Domination for %N for class %s", assister, g_ClassNames[victimClass]);
-
+		
 		new String:victimClassContext[64];
 		Format(victimClassContext, sizeof(victimClassContext), "victimclass:%s", g_ClassNames[victimClass]);
 		
-		SetVariantString("domination:dominated");
+		SetVariantString(victimClassContext);
 		AcceptEntityInput(assister, "AddContext");
 		
-		SetVariantString(victimClassContext);
+		SetVariantString("domination:dominated");
 		AcceptEntityInput(assister, "AddContext");
 		
 		SetVariantString("TLK_KILLED_PLAYER");
@@ -76,7 +76,13 @@ public Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	}
 	else if (deathflags & TF_DEATHFLAG_ASSISTERREVENGE == TF_DEATHFLAG_ASSISTERREVENGE)
 	{
-		LogMessage("Attempting to play Assister Revenge for %N", assister);
+		LogMessage("Attempting to play Assister Revenge for %N for class %s", assister, g_ClassNames[victimClass]);
+		
+		new String:victimClassContext[64];
+		Format(victimClassContext, sizeof(victimClassContext), "victimclass:%s", g_ClassNames[victimClass]);
+		
+		SetVariantString(victimClassContext);
+		AcceptEntityInput(assister, "AddContext");
 		
 		SetVariantString("domination:revenge");
 		AcceptEntityInput(assister, "AddContext");
