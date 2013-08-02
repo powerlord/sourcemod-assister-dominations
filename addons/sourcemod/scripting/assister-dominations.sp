@@ -58,35 +58,35 @@ public Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	
 	if (deathflags & TF_DEATHFLAG_ASSISTERDOMINATION)
 	{
-		new String:victimClassContext[64];
-		Format(victimClassContext, sizeof(victimClassContext), "victimclass:%s", g_ClassNames[victimClass]);
-		
-		SetVariantString(victimClassContext);
-		AcceptEntityInput(assister, "AddContext");
-		
-		SetVariantString("domination:dominated");
-		AcceptEntityInput(assister, "AddContext");
-		
-		SetVariantString("TLK_KILLED_PLAYER");
-		AcceptEntityInput(assister, "SpeakResponseConcept");
-		
-		AcceptEntityInput(assister, "ClearContext");
+		PlayAssisterSound(assister, victimClass, false);
 	}
 	else if (deathflags & TF_DEATHFLAG_ASSISTERREVENGE)
 	{
-		new String:victimClassContext[64];
-		Format(victimClassContext, sizeof(victimClassContext), "victimclass:%s", g_ClassNames[victimClass]);
-		
-		SetVariantString(victimClassContext);
-		AcceptEntityInput(assister, "AddContext");
-		
-		SetVariantString("domination:revenge");
-		AcceptEntityInput(assister, "AddContext");
-		
-		SetVariantString("TLK_KILLED_PLAYER");
-		AcceptEntityInput(assister, "SpeakResponseConcept");
-		
-		AcceptEntityInput(assister, "ClearContext");
+		PlayAssisterSound(assister, victimClass, true);
 	}
+}
 
+PlayAssisterSound(assister, TFClassType:victimClass, bool:revenge=false)
+{
+	if (revenge)
+	{
+		SetVariantString("domination:revenge");
+	}
+	else
+	{
+		SetVariantString("domination:dominated");
+	}
+	
+	AcceptEntityInput(assister, "AddContext");
+
+	new String:victimClassContext[64];
+	Format(victimClassContext, sizeof(victimClassContext), "victimclass:%s", g_ClassNames[victimClass]);
+	
+	SetVariantString(victimClassContext);
+	AcceptEntityInput(assister, "AddContext");
+	
+	SetVariantString("TLK_KILLED_PLAYER");
+	AcceptEntityInput(assister, "SpeakResponseConcept");
+	
+	AcceptEntityInput(assister, "ClearContext");
 }
