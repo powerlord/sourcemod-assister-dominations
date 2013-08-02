@@ -75,7 +75,18 @@ public Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 		return;
 	}
 
+	// The class check is here for Randomizer support... in case it supports cloaking devices/disguise kits (I forget if it does)
 	new TFClassType:victimClass = TF2_GetPlayerClass(victim);
+	
+	if (victimClass == TFClass_Spy && TF2_IsPlayerInCondition(victim, TFCond_Disguised))
+	{
+		new team = GetClientTeam(victim);
+		new disguiseTeam = GetEntProp(victim, Prop_Send, "m_nDisguiseTeam");
+		if (team == disguiseTeam)
+		{
+			victimClass = TFClassType:GetEntProp(victim, Prop_Send, "m_nDisguiseClass");
+		}
+	}
 	
 	if (deathflags & TF_DEATHFLAG_KILLERDOMINATION)
 	{
