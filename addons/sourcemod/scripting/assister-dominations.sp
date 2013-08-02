@@ -5,6 +5,8 @@
 
 #define VERSION "1.2"
 
+#define LOGFILE "assister-dominations.log"
+
 /*
 	TFClass_Unknown = 0,
 	TFClass_Scout,
@@ -39,15 +41,28 @@ public Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	new deathflags = GetEventInt(event, "deathflags");
 	new bool:silentKill = GetEventBool(event, "silent_kill");
 	
-	if (silentKill || dontBroadcast || deathflags & TF_DEATHFLAG_DEADRINGER == TF_DEATHFLAG_DEADRINGER)
+	new victimUser = GetEventInt(event, "userid");
+	new assisterUser = GetEventInt(event, "assister");
+	
+	new victim = GetClientOfUserId(victimUser);
+//	new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
+	new assister = GetClientOfUserId(assisterUser);
+	
+	if (deathflags & TF_DEATHFLAG_ASSISTERDOMINATION)
+	{
+		LogToFile(LOGFILE, "Detected assister domination: victim userId: %d, client: %d, assister userid: %d, client %d", victimUser, victim, assisterUser, assister);
+	}
+	
+	if (deathflags & TF_DEATHFLAG_ASSISTERREVENGE)
+	{
+		LogToFile(LOGFILE, "Detected assister revenger: victim userId: %d, client: %d, assister userid: %d, client %d", victimUser, victim, assisterUser, assister);
+	}
+	
+	if (silentKill || dontBroadcast || deathflags & TF_DEATHFLAG_DEADRINGER)
 	{
 		return;
 	}
 
-	new victim = GetClientOfUserId(GetEventInt(event, "userid"));
-//	new attacker = GetClientUserId(GetEventInt(event, "attacker"));
-	new assister = GetClientOfUserId(GetEventInt(event, "assister"));
-	
 	if (victim < 1 || victim > MaxClients || assister < 1 || assister > MaxClients || !IsClientInGame(assister) || !IsPlayerAlive(assister) ||
 		TF2_IsPlayerInCondition(assister, TFCond_Cloaked) || TF2_IsPlayerInCondition(assister, TFCond_Disguised))
 	{
@@ -56,9 +71,9 @@ public Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 
 	new TFClassType:victimClass = TF2_GetPlayerClass(victim);
 	
-	if (deathflags & TF_DEATHFLAG_ASSISTERDOMINATION == TF_DEATHFLAG_ASSISTERDOMINATION)
+	if (deathflags & TF_DEATHFLAG_ASSISTERDOMINATION)
 	{
-		LogMessage("Attempting to play Assister Domination for %N for class %s", assister, g_ClassNames[victimClass]);
+		LogToFile(LOGFILE, "Attempting to play Assister Domination for %N for class %s", assister, g_ClassNames[victimClass]);
 		
 		new String:victimClassContext[64];
 		Format(victimClassContext, sizeof(victimClassContext), "victimclass:%s", g_ClassNames[victimClass]);
@@ -74,9 +89,9 @@ public Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 		
 		AcceptEntityInput(assister, "ClearContext");
 	}
-	else if (deathflags & TF_DEATHFLAG_ASSISTERREVENGE == TF_DEATHFLAG_ASSISTERREVENGE)
+	else if (deathflags & TF_DEATHFLAG_ASSISTERREVENGE)
 	{
-		LogMessage("Attempting to play Assister Revenge for %N for class %s", assister, g_ClassNames[victimClass]);
+		LogToFile(LOGFILE, "Attempting to play Assister Revenge for %N for class %s", assister, g_ClassNames[victimClass]);
 		
 		new String:victimClassContext[64];
 		Format(victimClassContext, sizeof(victimClassContext), "victimclass:%s", g_ClassNames[victimClass]);
