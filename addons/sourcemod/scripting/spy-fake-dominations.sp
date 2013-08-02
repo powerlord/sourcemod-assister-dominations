@@ -3,7 +3,7 @@
 #include <tf2>
 #include <sdktools>
 
-#define VERSION "1.3"
+#define VERSION "1.0"
 
 /*
 	TFClass_Unknown = 0,
@@ -21,22 +21,34 @@ new String:g_ClassNames[TFClassType][16] = { "Unknown", "Scout", "Sniper", "Sold
 
 public Plugin:myinfo = 
 {
-	name = "Assister Domination Quotes",
+	name = "Spy Fake Domination Quotes",
 	author = "Powerlord",
-	description = "Play domination and revenge lines when an assister gets a domination or revenge",
+	description = "If a Spy fakes his death and a someone \"dominates\" them, play a domination quote",
 	version = VERSION,
 	url = "https://forums.alliedmods.net/showthread.php?t=215449"
 }
 
 new Handle:g_Cvar_Enabled;
+new Handle:g_Cvar_Assister;
 
 public OnPluginStart()
 {
-	CreateConVar("assisterdomination_version", VERSION, "Assister Domination Quotes version", FCVAR_PLUGIN|FCVAR_NOTIFY|FCVAR_DONTRECORD);
-	
-	g_Cvar_Enabled = CreateConVar("assisterdomination_enabled", "1", "Enabled Assister Domination Quotes?", FCVAR_PLUGIN|FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	CreateConVar("spyfakedominationquotes_version", VERSION, "Spy Fake Domination Quotes version", FCVAR_PLUGIN|FCVAR_NOTIFY|FCVAR_DONTRECORD);
+	g_Cvar_Enabled = CreateConVar("spyfakedominationquotes_enabled", "1", "Enable Spy Fake Domination Quotes?", FCVAR_PLUGIN|FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	
 	HookEvent("player_death", Event_PlayerDeath);
+}
+
+public OnAllPluginsLoaded()
+{
+	g_Cvar_Assister = FindConVar("assisterdomination_enabled");
+}
+
+// In case the plugin is loaded during a map, check on map start.
+// Convar handles don't need to be closed, so overwriting is OK
+public OnMapStart()
+{
+	g_Cvar_Assister = FindConVar("assisterdomination_enabled");
 }
 
 public Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
@@ -49,29 +61,53 @@ public Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	new deathflags = GetEventInt(event, "death_flags");
 	new bool:silentKill = GetEventBool(event, "silent_kill");
 	
-	if (silentKill || dontBroadcast || deathflags & TF_DEATHFLAG_DEADRINGER)
+	if (silentKill || dontBroadcast || deathflags & TF_DEATHFLAG_DEADRINGER != TF_DEATHFLAG_DEADRINGER)
 	{
 		return;
 	}
 
 	new victim = GetClientOfUserId(GetEventInt(event, "userid"));
-//	new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
+	new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
 	new assister = GetClientOfUserId(GetEventInt(event, "assister"));
 	
-	if (victim < 1 || victim > MaxClients || !CheckAttacker(assister))
+	if (victim < 1 || victim > MaxClients)
 	{
 		return;
 	}
 
 	new TFClassType:victimClass = TF2_GetPlayerClass(victim);
 	
-	if (deathflags & TF_DEATHFLAG_ASSISTERDOMINATION)
+	if (deathflags & TF_DEATHFLAG_KILLERDOMINATION)
 	{
-		PlayDominationSound(assister, victimClass, false);
+		if (CheckAttacker(attacker))
+		{
+			PlayDominationSound(attacker, victimClass);
+		}
 	}
-	else if (deathflags & TF_DEATHFLAG_ASSISTERREVENGE)
+	else if (deathflags & TF_DEATHFLAG_KILLERREVENGE)
 	{
-		PlayDominationSound(assister, victimClass, true);
+		if (CheckAttacker(attacker))
+		{
+			PlayDominationSound(attacker, victimClass, true);
+		}
+	}
+	
+	if (g_Cvar_Assister != INVALID_HANDLE && GetConVarBool(g_Cvar_Assister))
+	{
+		if (deathflags & TF_DEATHFLAG_ASSISTERDOMINATION)
+		{
+			if (CheckAttacker(assister))
+			{
+				PlayDominationSound(assister, victimClass);
+			}
+		}
+		else if (deathflags & TF_DEATHFLAG_ASSISTERREVENGE)
+		{
+			if (CheckAttacker(assister))
+			{
+				PlayDominationSound(assister, victimClass, true);
+			}
+		}
 	}
 }
 
