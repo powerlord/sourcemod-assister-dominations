@@ -25,7 +25,7 @@ public Plugin:myinfo =
 	author = "Powerlord",
 	description = "If a Spy fakes his death and a someone \"dominates\" them, play a domination quote",
 	version = VERSION,
-	url = "https://forums.alliedmods.net/showthread.php?t=215449"
+	url = "https://forums.alliedmods.net/showthread.php?t=222455"
 }
 
 new Handle:g_Cvar_Enabled;
