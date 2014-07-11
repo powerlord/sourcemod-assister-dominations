@@ -4,7 +4,7 @@
  * Spy Fake Domination Quotes
  * Description
  *
- * Spy Fake Domination Quotes (C)2014 Powerlord (Ross Bemrose).
+ * Spy Fake Domination Quotes (C)2013-2014 Powerlord (Ross Bemrose).
  * All rights reserved.
  * =============================================================================
  *
