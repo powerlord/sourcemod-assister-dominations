@@ -33,7 +33,7 @@
  */
 #include <sourcemod>
 #include <tf2_stocks>
-#include <tf2>
+//#include <tf2>
 #include <sdktools>
 
 #define VERSION "1.0"
@@ -74,8 +74,12 @@ public Action:Cmd_VoiceMenu(client, const String:command[], argc)
 		return Plugin_Continue;
 	}
 	
-	SetVariantString("crosshair_enemy:Yes");
-	AcceptEntityInput(client, "AddContext");
+	new curWeapon = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
+	if (curWeapon != -1 && curWeapon == GetPlayerWeaponSlot(client, TFWeaponSlot_Melee))
+	{
+		SetVariantString("crosshair_enemy:Yes");
+		AcceptEntityInput(client, "AddContext");
+	}
 	
 	return Plugin_Continue;
 }
